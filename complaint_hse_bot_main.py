@@ -5,6 +5,7 @@ import random
 import telebot
 from telebot import types
 
+
 bot = telebot.TeleBot('5447325606:AAHnzgoU2_3X6dmY8_UNVa7umyizaSpJtGw')
 
 course = ''
@@ -92,17 +93,34 @@ def send_meme(message):
     global memes
 
     if message.text in ['Хочу мем', 'Еще мем', 'Теперь мем']:
-        bot.send_photo(message.chat.id, random.choice(memes))
+        bot.send_photo(message.chat.id, random.choice(memes), reply_markup=gen_markup())
         buttons_more_funny(message)
 
     elif message.text in ['Хочу цитату', 'Еще цитату', 'Теперь цитату']:
         bot.send_message(message.chat.id, """
         — Может героин попробуем? Все лучше, чем Языковое разнообразие учить.
-    — А ты откуда знаешь? Учил, что ли?""")
+    — А ты откуда знаешь? Учил, что ли?""", reply_markup=gen_markup())
         buttons_more_cites(message)
 
     elif message.text == 'Обратно в меню':
         buttons_message(message)
+
+
+def gen_markup():
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 2
+    markup.add(types.InlineKeyboardButton("👍", callback_data="cb_like"),
+               types.InlineKeyboardButton("👎", callback_data="cb_dislike"))
+    return markup
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    if call.data == "cb_like":
+        # open the memes file and add link once again
+        bot.answer_callback_query(call.id, "Рад, что понравилось!")
+    elif call.data == "cb_dislike":
+        bot.answer_callback_query(call.id, "Спасибо за отзыв, учтем!")
 
 
 def get_complaint(message):
@@ -129,12 +147,6 @@ def get_course(message):
 @bot.message_handler(content_types=['text'])
 def echo(message):
     bot.send_message(message.chat.id, message.text)
-
-
-def get_user_text(message):
-    global user_text
-    user_text = message.text
-    bot.send_message(message.chat.id, 'Спасибо за обращение, я уже занимаюсь вашим вопросом')
 
 
 if __name__ == '__main__':
