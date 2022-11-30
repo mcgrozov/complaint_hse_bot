@@ -1,16 +1,34 @@
-# import os
-# os.system('pip install pyTelegramBotAPI')
-
 import random
 import telebot
 from telebot import types
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy import Table, Column, Integer, String, MetaData, insert
+
+
+
+engine = create_engine('sqlite:///complaint.db', echo=True, future=True)
+meta = MetaData()
+if not database_exists(engine.url):
+    create_database(engine.url)
+
+
+complaints = Table(
+   'complaints', meta,
+   Column('faculty', String),
+   Column('course', Integer),
+   Column('complaint', String),
+)
+
+meta.create_all(engine)
+
 
 
 bot = telebot.TeleBot('5447325606:AAHnzgoU2_3X6dmY8_UNVa7umyizaSpJtGw')
 
 course = ''
 faculty = ''
-complaints = []
+complaint = ''
 
 
 def memes_reader(path):
@@ -124,8 +142,8 @@ def callback_query(call):
 
 
 def get_complaint(message):
-    global complaints
-    complaints.append(message.text)
+    global complaint
+    complaint = message.text
     bot.send_message(message.chat.id, 'Чтобы завершить регестрацию проблемы, напиши, пожалуйста, на каком направлении ты учишься')
     bot.register_next_step_handler(message, get_faculty)
 
@@ -140,6 +158,10 @@ def get_faculty(message):
 def get_course(message):
     global course
     course = message.text
+    insertion = insert(complaints).values(complaint=complaint, faculty=faculty, course=course)
+    with engine.connect() as conn:
+        conn.execute(insertion)
+        conn.commit()
     bot.send_message(message.chat.id, 'Спасибо, твоя жалоба записана!')
     buttons_message(message)
 
