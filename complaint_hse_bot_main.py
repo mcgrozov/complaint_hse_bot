@@ -41,7 +41,7 @@ def memes_reader(path):
 def start_message(message):
     bot.send_message(message.chat.id, """
 Привет, я бот получения жалоб и комплиментов. 
-Здесь ты можешь высказать свою жалобу или комлимент относительно учебы в НИУ ВШЭ НН.
+Здесь ты можешь высказать свою жалобу или комплимент относительно учебы в НИУ ВШЭ НН.
 Также мы можем предложить тебе психологическую поддержку ввиде мема:)
 Введи команду /button""")
 
@@ -55,6 +55,8 @@ def buttons_message(message):
     markup.add(item2)
     item3 = types.KeyboardButton("Рассмеши меня")
     markup.add(item3)
+    item4 = types.KeyboardButton("Личная помощь")
+    markup.add(item4)
     bot.send_message(message.chat.id, 'Жми на одну из кнопок внизу ↓', reply_markup=markup)
 
 
@@ -91,7 +93,43 @@ def buttons_more_cites(message):
     bot.register_next_step_handler(message, send_meme)
 
 
-@bot.message_handler(func=lambda msg: msg.text in ["Мне нужна красная кнопка", "Рассмеши меня", "Обратиться к вышке"])
+def help_type(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Помощь деканата")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Помощь академического руководителя")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Обратно в меню")
+    markup.add(item3)
+    bot.send_message(message.chat.id, 'Чья помощь тебе необходима?', reply_markup=markup)
+    
+
+def deans_office(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Номер менеджера ОП")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Время работы деканата")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Почта менеджера ОП")
+    markup.add(item3)
+    item4 = types.KeyboardButton("Обратно в меню")
+    markup.add(item4)
+    bot.send_message(message.chat.id, 'Тип помощи', reply_markup=markup)
+
+def academic_dir(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Номер академичекого руководителя")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Социальные сети академического руководителя")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Почта академического руководителя")
+    markup.add(item3)
+    item4 = types.KeyboardButton("Обратно в меню")
+    markup.add(item4)
+    bot.send_message(message.chat.id, 'Тип помощи', reply_markup=markup)
+
+
+@bot.message_handler(func=lambda msg: msg.text in ["Мне нужна красная кнопка", "Рассмеши меня", "Личная помощь", "Обратиться к вышке"])
 def messages_button_reply(message):
     # красную кнопку в отдельную функцию
     if message.text == "Мне нужна красная кнопка":
@@ -105,6 +143,10 @@ def messages_button_reply(message):
     elif message.text == "Обратиться к вышке":
         bot.send_message(message.chat.id, 'Опиши свою проблему', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, get_complaint)
+    
+    elif message.text == "Личная помощь":
+        help_type(message)
+        bot.register_next_step_handler(message, help_type)
 
 
 def send_meme(message):
@@ -139,6 +181,15 @@ def callback_query(call):
         bot.answer_callback_query(call.id, "Рад, что понравилось!")
     elif call.data == "cb_dislike":
         bot.answer_callback_query(call.id, "Спасибо за отзыв, учтем!")
+
+
+def get_help(message):
+    if message.text in ['Личная помощь', 'Мне нужна помощь', 'Помогите']:
+        bot.register_next_step_handler(message, get_help)
+        if message.text in ["Помощь деканата"]:
+            bot.register_next_step_handler(message, deans_office)
+        elif message in ["Помощь академического руководителя"]:
+            bot.register_next_step_handler(message, academic_dir)
 
 
 def get_complaint(message):
