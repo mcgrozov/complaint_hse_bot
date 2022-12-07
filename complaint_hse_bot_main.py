@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import pandas as pd
 import telebot
-from sqlalchemy import Table, Column, Integer, String, MetaData, insert, text
+from sqlalchemy import Table, Column, String, MetaData, insert, text
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 from telebot import types
@@ -34,6 +34,75 @@ meta.create_all(engine)
 bot = telebot.TeleBot('5447325606:AAHnzgoU2_3X6dmY8_UNVa7umyizaSpJtGw')
 
 info_by_chat_id = defaultdict(defaultdict)
+
+
+def buttons_funny(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Хочу мем")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Хочу цитату")
+    markup.add(item2)
+    bot.send_message(message.chat.id, "Как я могу тебя рассмешить?", reply_markup=markup)
+
+
+@bot.message_handler(commands=['button'])
+def buttons_message(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Обратиться к Вышке")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Мне нужна красная кнопка")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Рассмеши меня")
+    markup.add(item3)
+    item4 = types.KeyboardButton("Личная помощь")
+    markup.add(item4)
+    bot.send_message(message.chat.id, "Жми на одну из кнопок внизу ↓", reply_markup=markup)
+
+
+def buttons_more_cites(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Еще цитату")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Теперь мем")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Обратно в меню")
+    markup.add(item3)
+    bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
+    bot.register_next_step_handler(message, send_meme)
+
+
+def buttons_more_funny(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Еще мем")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Теперь цитату")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Обратно в меню")
+    markup.add(item3)
+    bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
+    bot.register_next_step_handler(message, send_meme)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    if call.data == "cb_like":
+        # open the memes file and add link once again
+        bot.answer_callback_query(call.id, "Рад, что понравилось!")
+    elif call.data == "cb_dislike":
+        bot.answer_callback_query(call.id, "Спасибо за отзыв, учтем!")
+
+
+def done_complaint(message):
+    insertion = insert(complaints).values(
+        complaint=info_by_chat_id[message.chat.id]['complaint'],
+        faculty=info_by_chat_id[message.chat.id]['faculty'],
+        year=info_by_chat_id[message.chat.id]['year']
+    )
+    with engine.connect() as conn:
+        conn.execute(insertion)
+        conn.commit()
+    bot.send_message(message.chat.id, "Спасибо, твоя жалоба записана!")
+    buttons_message(message)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -130,68 +199,13 @@ def faculty_handler(message):
         bot.register_next_step_handler(message, faculty_handler)
 
 
-def buttons_funny(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Хочу мем")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Хочу цитату")
-    markup.add(item2)
-    bot.send_message(message.chat.id, "Как я могу тебя рассмешить?", reply_markup=markup)
-
-
-@bot.message_handler(commands=['button'])
-def buttons_message(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Обратиться к Вышке")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Мне нужна красная кнопка")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Рассмеши меня")
-    markup.add(item3)
-    item4 = types.KeyboardButton("Личная помощь")
-    markup.add(item4)
-    bot.send_message(message.chat.id, "Жми на одну из кнопок внизу ↓", reply_markup=markup)
-
-
-def buttons_more_cites(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Еще цитату")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Теперь мем")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Обратно в меню")
-    markup.add(item3)
-    bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
-    bot.register_next_step_handler(message, send_meme)
-
-
-def buttons_more_funny(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Еще мем")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Теперь цитату")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Обратно в меню")
-    markup.add(item3)
-    bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
-    bot.register_next_step_handler(message, send_meme)
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    if call.data == "cb_like":
-        # open the memes file and add link once again
-        bot.answer_callback_query(call.id, "Рад, что понравилось!")
-    elif call.data == "cb_dislike":
-        bot.answer_callback_query(call.id, "Спасибо за отзыв, учтем!")
-
-
 def faculty_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton("Факультет гуманитарных наук"), types.KeyboardButton("Факультет права"))
     markup.add(types.KeyboardButton("Факультет менеджмента"), types.KeyboardButton("Факультет экономики"))
     markup.add(types.KeyboardButton("Факультет информатики, математики и компьютерных наук"))
     return markup
+
 
 # @bot.message_handler(content_types=["text"])
 # def echo(message):
@@ -226,76 +240,6 @@ def get_complaint(message):
         )
         info_by_chat_id[message.chat.id]['action'] = 'complaint'
         bot.register_next_step_handler(message, faculty_handler)
-
-
-def done_complaint(message):
-    insertion = insert(complaints).values(
-        complaint=info_by_chat_id[message.chat.id]['complaint'],
-        faculty=info_by_chat_id[message.chat.id]['faculty'],
-        year=info_by_chat_id[message.chat.id]['year']
-    )
-    with engine.connect() as conn:
-        conn.execute(insertion)
-        conn.commit()
-    bot.send_message(message.chat.id, "Спасибо, твоя жалоба записана!")
-    buttons_message(message)
-
-
-def help_type(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Помощь деканата")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Помощь академического руководителя")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Обратно в меню")
-    markup.add(item3)
-    bot.send_message(message.chat.id, "Чья помощь тебе необходима?", reply_markup=markup)
-    bot.register_next_step_handler(message, help_handler)
-
-
-def memes_reader(path):
-    with open(path, encoding='utf-8') as mf:
-        memes = mf.readlines()
-    return memes
-
-
-@bot.message_handler(func=lambda msg: msg.text in (
-        "Мне нужна красная кнопка", "Рассмеши меня", "Личная помощь", "Обратиться к Вышке"
-))
-def messages_button_reply(message):
-    # красную кнопку в отдельную функцию
-    if message.text == "Мне нужна красная кнопка":
-        bot.send_message(
-            message.chat.id,
-            "[Ссылка на красную кнопку]"
-            "(https://lk.hse.ru/user-suggestions?_gl=1%2a1jiumcf%2a_ga%2aMTcwMjg1MTU3MS4xNjY5MjMwNzc1%2a_"
-            "ga_P5QXNNXGKL%2aMTY2OTIzMDc3NC4xLjEuMTY2OTIzMDc5NC40MC4wLjA.)",
-            parse_mode="MarkdownV2"
-        )
-
-    elif message.text == "Рассмеши меня":
-        buttons_funny(message)
-        bot.register_next_step_handler(message, send_meme)
-
-    elif message.text == "Обратиться к Вышке":
-        bot.send_message(message.chat.id, "Опиши свою проблему", reply_markup=types.ReplyKeyboardRemove())
-        bot.register_next_step_handler(message, get_complaint)
-
-    elif message.text == "Личная помощь":
-        with engine.connect() as conn:
-            res = conn.execute(text(f'select * from users where chat_id = {message.chat.id}')).fetchall()
-        if res:
-            print(res)
-            info_by_chat_id[message.chat.id]['specialisation'] = res[0][2]
-            help_type(message)
-        else:
-            bot.send_message(
-                message.chat.id,
-                "Выбери свой факультет",
-                reply_markup=faculty_markup()
-            )
-            info_by_chat_id[message.chat.id]['action'] = 'help'
-            bot.register_next_step_handler(message, faculty_handler)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -379,6 +323,63 @@ def help_handler(message):
 
     elif message.text == "Обратно в меню":
         buttons_message(message)
+
+
+def help_type(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Помощь деканата")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Помощь академического руководителя")
+    markup.add(item2)
+    item3 = types.KeyboardButton("Обратно в меню")
+    markup.add(item3)
+    bot.send_message(message.chat.id, "Чья помощь тебе необходима?", reply_markup=markup)
+    bot.register_next_step_handler(message, help_handler)
+
+
+def memes_reader(path):
+    with open(path, encoding='utf-8') as mf:
+        memes = mf.readlines()
+    return memes
+
+
+@bot.message_handler(func=lambda msg: msg.text in (
+        "Мне нужна красная кнопка", "Рассмеши меня", "Личная помощь", "Обратиться к Вышке"
+))
+def messages_button_reply(message):
+    # красную кнопку в отдельную функцию
+    if message.text == "Мне нужна красная кнопка":
+        bot.send_message(
+            message.chat.id,
+            "[Ссылка на красную кнопку]"
+            "(https://lk.hse.ru/user-suggestions?_gl=1%2a1jiumcf%2a_ga%2aMTcwMjg1MTU3MS4xNjY5MjMwNzc1%2a_"
+            "ga_P5QXNNXGKL%2aMTY2OTIzMDc3NC4xLjEuMTY2OTIzMDc5NC40MC4wLjA.)",
+            parse_mode="MarkdownV2"
+        )
+
+    elif message.text == "Рассмеши меня":
+        buttons_funny(message)
+        bot.register_next_step_handler(message, send_meme)
+
+    elif message.text == "Обратиться к Вышке":
+        bot.send_message(message.chat.id, "Опиши свою проблему", reply_markup=types.ReplyKeyboardRemove())
+        bot.register_next_step_handler(message, get_complaint)
+
+    elif message.text == "Личная помощь":
+        with engine.connect() as conn:
+            res = conn.execute(text(f'select * from users where chat_id = {message.chat.id}')).fetchall()
+        if res:
+            print(res)
+            info_by_chat_id[message.chat.id]['specialisation'] = res[0][2]
+            help_type(message)
+        else:
+            bot.send_message(
+                message.chat.id,
+                "Выбери свой факультет",
+                reply_markup=faculty_markup()
+            )
+            info_by_chat_id[message.chat.id]['action'] = 'help'
+            bot.register_next_step_handler(message, faculty_handler)
 
 
 def send_meme(message):
