@@ -38,49 +38,45 @@ info_by_chat_id = defaultdict(defaultdict)
 
 def buttons_funny(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Хочу мем")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Хочу цитату")
-    markup.add(item2)
+    markup.add(types.KeyboardButton("Хочу мем"))
+    markup.add(types.KeyboardButton("Хочу цитату"))
     bot.send_message(message.chat.id, "Как я могу тебя рассмешить?", reply_markup=markup)
 
 
 @bot.message_handler(commands=['button'])
 def buttons_message(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Обратиться к Вышке")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Мне нужна красная кнопка")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Рассмеши меня")
-    markup.add(item3)
-    item4 = types.KeyboardButton("Личная помощь")
-    markup.add(item4)
+    markup.add(types.KeyboardButton("Обратиться к Вышке"))
+    markup.add(types.KeyboardButton("Мне нужна красная кнопка"))
+    markup.add(types.KeyboardButton("Рассмеши меня"))
+    markup.add(types.KeyboardButton("Личная помощь"))
     bot.send_message(message.chat.id, "Жми на одну из кнопок внизу ↓", reply_markup=markup)
 
 
 def buttons_more_cites(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Еще цитату")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Теперь мем")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Обратно в меню")
-    markup.add(item3)
+    markup.add(types.KeyboardButton("Еще цитату"))
+    markup.add(types.KeyboardButton("Теперь мем"))
+    markup.add(types.KeyboardButton("Обратно в меню"))
     bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
-    bot.register_next_step_handler(message, send_meme)
+    bot.register_next_step_handler(message, send_more)
 
 
 def buttons_more_funny(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Еще мем")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Теперь цитату")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Обратно в меню")
-    markup.add(item3)
+    markup.add(types.KeyboardButton("Еще мем"))
+    markup.add(types.KeyboardButton("Теперь цитату"))
+    markup.add(types.KeyboardButton("Обратно в меню"))
     bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
-    bot.register_next_step_handler(message, send_meme)
+    bot.register_next_step_handler(message, send_more)
+
+
+def buttons_more_help(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(types.KeyboardButton("Хочу получить другую информацию"))
+    markup.add(types.KeyboardButton("Обратно в меню"))
+    bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
+    bot.register_next_step_handler(message, help_type)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -137,9 +133,11 @@ def faculty_handler(message):
     elif msg == "Факультет менеджмента":
         info_by_chat_id[message.chat.id]['faculty'] = msg
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(types.KeyboardButton("Цифровой маркетинг"), types.KeyboardButton("Маркетинг"))
+        markup.add(types.KeyboardButton("Управление бизнесом"), types.KeyboardButton("Цифровой маркетинг"))
+        markup.add(types.KeyboardButton("Организация и управление предприятием"))
+        markup.add(types.KeyboardButton("Международный бакалавриат по бизнесу и экономике"))
         markup.add(types.KeyboardButton("Управление развитием компании"), types.KeyboardButton("Управление образованием"))
-        markup.add(types.KeyboardButton("Управление бизнесом в глобальных условиях"))
+        markup.add(types.KeyboardButton("Управление бизнесом в глобальных условиях"), types.KeyboardButton("Маркетинг"))
         markup.add(types.KeyboardButton("Управление организациями и проектами"))
         bot.reply_to(
             message=message,
@@ -148,10 +146,11 @@ def faculty_handler(message):
         )
         bot.register_next_step_handler(message, faculty_handler)
     elif msg == "Факультет экономики":
-        info_by_chat_id[message.message.chat.id]['faculty'] = msg
+        info_by_chat_id[message.chat.id]['faculty'] = msg
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(types.KeyboardButton("Международный бакалавриат по бизнесу и экономике"))
-        markup.add(types.KeyboardButton("Финансы"))
+        markup.add(types.KeyboardButton("Экономика"), types.KeyboardButton("Международный бакалавриат по бизнесу и экономике"))
+        markup.add(types.KeyboardButton("Экономика и бизнес"), types.KeyboardButton("Экономика и анализ бизнеса"))
+        markup.add(types.KeyboardButton("Финансы"), types.KeyboardButton("Бизнес-аналитика в экономике и менеджменте"))
         bot.reply_to(
             message=message,
             text='Теперь выбери свою ОП',
@@ -161,9 +160,10 @@ def faculty_handler(message):
     elif msg == "Факультет информатики, математики и компьютерных наук":
         info_by_chat_id[message.chat.id]['faculty'] = msg
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(types.KeyboardButton("Компьютерные науки и технологии"), types.KeyboardButton("Математика"))
+        markup.add(types.KeyboardButton("Компьютерные науки и технологии"), types.KeyboardButton("Программная инженерия"))
+        markup.add(types.KeyboardButton("Прикладная математика и информатика"), types.KeyboardButton("Математика (бакалавриат)"))
         markup.add(types.KeyboardButton("Интеллектуальный анализ данных"), types.KeyboardButton("Бизнес-информатика"))
-        markup.add(types.KeyboardButton("Магистр по компьютерному зрению"))
+        markup.add(types.KeyboardButton("Магистр по компьютерному зрению"), types.KeyboardButton("Математика (магистратура)"))
         bot.reply_to(
             message=message,
             text='Теперь выбери свою ОП',
@@ -183,7 +183,7 @@ def faculty_handler(message):
             conn.commit()
 
         if info_by_chat_id[message.chat.id]['action'] == 'help':
-            bot.register_next_step_handler(message, help_handler)
+            bot.register_next_step_handler(message, help_type)
         elif info_by_chat_id[message.chat.id]['action'] == 'complaint':
             bot.register_next_step_handler(message, done_complaint)
     else:
@@ -244,11 +244,14 @@ def get_complaint(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def help_handler(message):
+    def separate_values(values):
+        return "\n".join(values.item().split(', '))
+
     global mails
     info = mails[mails["Направление"] == info_by_chat_id[message.chat.id]["specialisation"]]
     if info.empty:
         bot.send_message(message.chat.id, "К сожалению, твоей ОП еще нет в списке")
-        buttons_message(message)
+        buttons_more_help(message)
 
     if message.text == "Помощь деканата":
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -258,20 +261,18 @@ def help_handler(message):
         markup.add(types.KeyboardButton("Обратно в меню"))
         bot.reply_to(
             message=message,
-            text="Выбери тип помощи",
+            text="Выбери способ связи",
             reply_markup=markup
         )
         bot.register_next_step_handler(message, help_handler)
 
     elif message.text == "Помощь академического руководителя":
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(types.KeyboardButton("Номер академичеcкого руководителя"))
-        markup.add(types.KeyboardButton("Социальные сети академического руководителя"))
         markup.add(types.KeyboardButton("Почта академического руководителя"))
         markup.add(types.KeyboardButton("Обратно в меню"))
         bot.reply_to(
             message=message,
-            text="Выбери тип помощи",
+            text="Выбери способ связи",
             reply_markup=markup
         )
         bot.register_next_step_handler(message, help_handler)
@@ -279,47 +280,32 @@ def help_handler(message):
     elif message.text == "Номер менеджера ОП":
         bot.reply_to(
             message=message,
-            text=f'{info["ФИО менеджера ОП"].item()}\n'
-                 f'{info["Номер менеджера ОП"].item()}'
+            text=f'{separate_values(info["ФИО менеджера ОП"])}\n'
+                 f'{separate_values(info["Номер менеджера ОП"])}'
         )
-        # todo: предложить еще помощь другие опции
-        buttons_message(message)
+        buttons_more_help(message)
     elif message.text == "Почта менеджера ОП":
         bot.reply_to(
             message=message,
-            text=f'{info["ФИО менеджера ОП"].item()}\n'
-                 f'{info["Почта менеджера ОП"].item()}'
+            text=f'{separate_values(info["ФИО менеджера ОП"])}\n'
+                 f'{separate_values(info["Почта менеджера ОП"])}'
         )
-        buttons_message(message)
+        buttons_more_help(message)
     elif message.text == "Время работы деканата":
         bot.reply_to(
             message=message,
-            text=f'{info["ФИО менеджера ОП"].item()}\n'
-                 f'{info["Время работы деканата"].item()}'
+            text=f'{separate_values(info["ФИО менеджера ОП"])}\n'
+                 f'{separate_values(info["Время работы деканата"])}'
         )
-        buttons_message(message)
+        buttons_more_help(message)
 
-    elif message.text == "Номер академичеcкого руководителя":
-        bot.reply_to(
-            message=message,
-            text=f'{info["ФИО академичеcкого руководителя"].item()}\n'
-                 f'{info["Номер академичеcкого руководителя"].item()}'
-        )
-        buttons_message(message)
-    elif message.text == "Социальные сети академического руководителя":
-        bot.reply_to(
-            message=message,
-            text=f'{info["ФИО академичеcкого руководителя"].item()}\n' +
-                 "\n".join(info["Социальные сети академического руководителя"].item().split(", "))
-        )
-        buttons_message(message)
     elif message.text == "Почта академического руководителя":
         bot.reply_to(
             message=message,
-            text=f'{info["ФИО академичеcкого руководителя"].item()}\n'
-                 f'{info["Почта академического руководителя"].item()}'
+            text=f'{separate_values(info["ФИО академичеcкого руководителя"].values)}\n'
+                 f'{separate_values(info["Почта академического руководителя"].values)}'
         )
-        buttons_message(message)
+        buttons_more_help(message)
 
     elif message.text == "Обратно в меню":
         buttons_message(message)
@@ -327,12 +313,9 @@ def help_handler(message):
 
 def help_type(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Помощь деканата")
-    markup.add(item1)
-    item2 = types.KeyboardButton("Помощь академического руководителя")
-    markup.add(item2)
-    item3 = types.KeyboardButton("Обратно в меню")
-    markup.add(item3)
+    markup.add(types.KeyboardButton("Помощь деканата"))
+    markup.add(types.KeyboardButton("Помощь академического руководителя"))
+    markup.add(types.KeyboardButton("Обратно в меню"))
     bot.send_message(message.chat.id, "Чья помощь тебе необходима?", reply_markup=markup)
     bot.register_next_step_handler(message, help_handler)
 
@@ -359,7 +342,7 @@ def messages_button_reply(message):
 
     elif message.text == "Рассмеши меня":
         buttons_funny(message)
-        bot.register_next_step_handler(message, send_meme)
+        bot.register_next_step_handler(message, send_more)
 
     elif message.text == "Обратиться к Вышке":
         bot.send_message(message.chat.id, "Опиши свою проблему", reply_markup=types.ReplyKeyboardRemove())
@@ -382,7 +365,7 @@ def messages_button_reply(message):
             bot.register_next_step_handler(message, faculty_handler)
 
 
-def send_meme(message):
+def send_more(message):
     global memes
 
     if message.text in ["Хочу мем", "Еще мем", "Теперь мем"]:
@@ -390,11 +373,9 @@ def send_meme(message):
         buttons_more_funny(message)
 
     elif message.text in ["Хочу цитату", "Еще цитату", "Теперь цитату"]:
-        # todo: add more citations
         bot.send_message(
             message.chat.id,
-            "— Может героин попробуем? Все лучше, чем Языковое разнообразие учить.\n"
-            "— А ты откуда знаешь? Учил, что ли?",
+            random.choice(jokes),
             reply_markup=gen_markup()
         )
         buttons_more_cites(message)
@@ -417,4 +398,5 @@ def start_message(message):
 if __name__ == "__main__":
     memes = memes_reader("memes.txt")
     mails = pd.read_csv('mails.csv')
+    jokes = pd.read_csv('jokes.csv')['joke'].to_list()
     bot.infinity_polling()
