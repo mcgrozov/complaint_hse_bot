@@ -79,6 +79,36 @@ def buttons_more_help(message):
     bot.register_next_step_handler(message, help_type)
 
 
+def buttons_red_button(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Мне все еще нужна кнопка")
+    markup.add(item1)
+    item2 = types.KeyboardButton("Обратно в меню")
+    markup.add(item2)
+
+    text = "Красная (или Выразительная) кнопка - это форма обращения к Управлению по организации процесса обучения. " \
+           "Ваша жалоба поступит напрямую в Управление, которое занимается организацией процесса обучения ВШЭ. " \
+           "Претензия будет передана в подразделение, компетенцией которого является решение указанной проблемы.\n\n" \
+           "Не рекомендуем использовать Выразительную кнопку, если есть возможность решить проблему иными способами: " \
+           "вы можете обратиться к академическому руководителю, в свой деканат или оставить жалобу в этом боте!\n\n" \
+           "Хотите продолжить?"
+
+    bot.send_message(message.chat.id, text, reply_markup=markup)
+    bot.register_next_step_handler(message, buttons_red_final)
+
+
+def buttons_red_final(message):
+    if message.text == 'Мне все еще нужна кнопка':
+        bot.send_message(
+            message.chat.id,
+            "[Ссылка на красную кнопку]"
+            "(https://lk.hse.ru/user-suggestions?_gl=1%2a1jiumcf%2a_ga%2aMTcwMjg1MTU3MS4xNjY5MjMwNzc1%2a_"
+            "ga_P5QXNNXGKL%2aMTY2OTIzMDc3NC4xLjEuMTY2OTIzMDc5NC40MC4wLjA.)",
+            parse_mode="MarkdownV2"
+        )
+    buttons_message(message)
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     if call.data == "cb_like":
@@ -332,13 +362,7 @@ def memes_reader(path):
 def messages_button_reply(message):
     # красную кнопку в отдельную функцию
     if message.text == "Мне нужна красная кнопка":
-        bot.send_message(
-            message.chat.id,
-            "[Ссылка на красную кнопку]"
-            "(https://lk.hse.ru/user-suggestions?_gl=1%2a1jiumcf%2a_ga%2aMTcwMjg1MTU3MS4xNjY5MjMwNzc1%2a_"
-            "ga_P5QXNNXGKL%2aMTY2OTIzMDc3NC4xLjEuMTY2OTIzMDc5NC40MC4wLjA.)",
-            parse_mode="MarkdownV2"
-        )
+        buttons_red_button(message)
 
     elif message.text == "Рассмеши меня":
         buttons_funny(message)
