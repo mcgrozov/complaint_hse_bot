@@ -342,6 +342,8 @@ def help_handler(message):
 
 
 def help_type(message):
+    if message.text == 'Обратно в меню':
+        buttons_message(message)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton("Помощь деканата"))
     markup.add(types.KeyboardButton("Помощь академического руководителя"))
