@@ -1,0 +1,4 @@
+pandas
+pyTelegramBotApi
+SQLAlchemy
+sqlalchemy-utils
