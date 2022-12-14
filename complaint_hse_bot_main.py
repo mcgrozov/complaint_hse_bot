@@ -8,6 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 from telebot import types
 
+from MessageClassifier import MessageClassifier
+
 
 engine = create_engine('sqlite:///complaint.db', echo=True, future=True)
 meta = MetaData()
@@ -119,6 +121,8 @@ def callback_query(call):
 
 
 def done_complaint(message):
+    global answers_positive, answers_negative, m_clf
+
     insertion = insert(complaints).values(
         complaint=info_by_chat_id[message.chat.id]['complaint'],
         faculty=info_by_chat_id[message.chat.id]['faculty'],
@@ -127,7 +131,14 @@ def done_complaint(message):
     with engine.connect() as conn:
         conn.execute(insertion)
         conn.commit()
-    bot.send_message(message.chat.id, "Спасибо, твоя жалоба записана!")
+    
+    santiment = m_clf.predict(message.text)
+    if santiment == 0:
+        answer = random.choice(answers_negative)
+    else:
+        answer = random.choice(answers_positive)
+    
+    bot.send_message(message.chat.id, answer)
     buttons_message(message)
 
 
@@ -426,3 +437,7 @@ if __name__ == "__main__":
     mails = pd.read_csv('mails.csv')
     jokes = pd.read_csv('jokes.csv')['joke'].to_list()
     bot.infinity_polling()
+    answers = pd.read_csv('answers.csv')
+    answers_positive = answers['positive'].to_list()
+    answers_negative = answers['negative'].to_list()
+    m_clf = MessageClassifier('clf.pkl', 'tfidf.pkl')
